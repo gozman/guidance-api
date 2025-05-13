@@ -139,15 +139,15 @@ class InstructionsService {
       const context = browser.contexts()[0];
       page = context.pages()[0];
       
-      console.log(`Navigating to ${this.loginUrl}...`);
-      await page.goto(this.loginUrl);
+      // Navigate directly to the create instruction page
+      const createUrl = 'https://gozblox.ada.support/guidance/create';
+      console.log(`Navigating to ${createUrl}...`);
+      await page.goto(createUrl);
       
       // Login
       await this._login(page, username, password);
       
-      // Click the "New custom instruction" button
       console.log('Creating new instruction...');
-      await page.click('button:has-text("New custom instruction")');
       
       // Fill in the title field
       await page.locator('textarea').first().fill(title);
