@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guidance API - Instructions Client</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+      color: #333;
+    }
+    h1, h2 {
+      color: #2c3e50;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 10px;
+    }
+    .container {
+      display: flex;
+      gap: 20px;
+    }
+    .form-container {
+      flex: 1;
+    }
+    .result-container {
+      flex: 1;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    input, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    textarea {
+      height: 100px;
+      font-family: monospace;
+    }
+    button {
+      background-color: #3498db;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+      margin-right: 10px;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+    button.delete {
+      background-color: #e74c3c;
+    }
+    button.delete:hover {
+      background-color: #c0392b;
+    }
+    pre {
+      background-color: #f8f9fa;
+      padding: 15px;
+      border-radius: 4px;
+      overflow: auto;
+      max-height: 400px;
+    }
+    .loading {
+      display: none;
+      margin-top: 20px;
+      font-style: italic;
+      color: #666;
+    }
+    .error {
+      color: #e74c3c;
+      font-weight: bold;
+    }
+    .instruction-list {
+      list-style: none;
+      padding: 0;
+    }
+    .instruction-item {
+      background-color: #f8f9fa;
+      padding: 10px 15px;
+      margin-bottom: 10px;
+      border-radius: 4px;
+      border-left: 4px solid #3498db;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .instruction-item button {
+      padding: 5px 10px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Guidance API - Instructions Client</h1>
+  
+  <div class="container">
+    <div class="form-container">
+      <h2>Login Credentials</h2>
+      <div class="form-group">
+        <label for="username">Username (optional - uses server default if empty):</label>
+        <input type="email" id="username" placeholder="Enter your email">
+      </div>
+      
+      <div class="form-group">
+        <label for="password">Password (optional - uses server default if empty):</label>
+        <input type="password" id="password" placeholder="Enter your password">
+      </div>
+      
+      <h2>Create Instruction</h2>
+      <div class="form-group">
+        <label for="title">Instruction Title:</label>
+        <input type="text" id="title" placeholder="e.g., Be concise" required>
+      </div>
+      
+      <div class="form-group">
+        <label for="content">Instruction Content:</label>
+        <textarea id="content" placeholder="e.g., Provide short, direct answers without unnecessary details" required></textarea>
+      </div>
+      
+      <button id="createBtn">Create Instruction</button>
+      
+      <div id="createLoading" class="loading">
+        Creating instruction... Please wait.
+      </div>
+    </div>
+    
+    <div class="result-container">
+      <h2>Instructions</h2>
+      <button id="refreshBtn">Refresh List</button>
+      <button id="deleteAllBtn" class="delete">Delete All</button>
+      <div id="loadingInstructions" class="loading">
+        Loading instructions...
+      </div>
+      <ul id="instructionsList" class="instruction-list">
+        <li>Loading instructions...</li>
+      </ul>
+      
+      <h2>API Response</h2>
+      <pre id="results">No results yet. Create or delete an instruction to see results.</pre>
+    </div>
+  </div>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const API_URL = 'http://localhost:3000';
+      const createBtn = document.getElementById('createBtn');
+      const refreshBtn = document.getElementById('refreshBtn');
+      const deleteAllBtn = document.getElementById('deleteAllBtn');
+      const usernameInput = document.getElementById('username');
+      const passwordInput = document.getElementById('password');
+      const titleInput = document.getElementById('title');
+      const contentInput = document.getElementById('content');
+      const resultsElement = document.getElementById('results');
+      const instructionsList = document.getElementById('instructionsList');
+      const createLoadingElement = document.getElementById('createLoading');
+      const loadingInstructionsElement = document.getElementById('loadingInstructions');
+      
+      // Load instructions on page load
+      loadInstructions();
+      
+      // Create instruction
+      createBtn.addEventListener('click', async () => {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        const title = titleInput.value.trim();
+        const content = contentInput.value.trim();
+        
+        // Username and password are optional - server will use defaults if not provided
+        
+        if (!title) {
+          resultsElement.textContent = 'Error: Instruction title is required';
+          resultsElement.classList.add('error');
+          return;
+        }
+        
+        if (!content) {
+          resultsElement.textContent = 'Error: Instruction content is required';
+          resultsElement.classList.add('error');
+          return;
+        }
+        
+        // Show loading indicator
+        createLoadingElement.style.display = 'block';
+        resultsElement.textContent = 'Creating instruction...';
+        resultsElement.classList.remove('error');
+        
+        try {
+          const response = await fetch(`${API_URL}/instructions`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              username,
+              password,
+              title,
+              content,
+            }),
+          });
+          
+          const data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to create instruction');
+          }
+          
+          // Format and display the results
+          resultsElement.textContent = JSON.stringify(data, null, 2);
+          
+          // Clear form
+          titleInput.value = '';
+          contentInput.value = '';
+          
+          // Reload instructions
+          loadInstructions();
+          
+        } catch (error) {
+          resultsElement.textContent = `Error: ${error.message}`;
+          resultsElement.classList.add('error');
+        } finally {
+          // Hide loading indicator
+          createLoadingElement.style.display = 'none';
+        }
+      });
+      
+      // Refresh instructions
+      refreshBtn.addEventListener('click', () => {
+        loadInstructions();
+      });
+      
+      // Delete all instructions
+      deleteAllBtn.addEventListener('click', async () => {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        
+        // Username and password are optional - server will use defaults if not provided
+        
+        if (!confirm('Are you sure you want to delete ALL instructions? This cannot be undone.')) {
+          return;
+        }
+        
+        resultsElement.textContent = 'Deleting all instructions...';
+        resultsElement.classList.remove('error');
+        
+        try {
+          const response = await fetch(`${API_URL}/instructions/delete`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              username,
+              password
+            }),
+          });
+          
+          const data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to delete all instructions');
+          }
+          
+          // Format and display the results
+          resultsElement.textContent = JSON.stringify(data, null, 2);
+          
+          // Reload instructions
+          loadInstructions();
+          
+        } catch (error) {
+          resultsElement.textContent = `Error: ${error.message}`;
+          resultsElement.classList.add('error');
+        }
+      });
+      
+      // Load instructions
+      async function loadInstructions() {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        
+        // Username and password are optional - server will use defaults if not provided
+        
+        loadingInstructionsElement.style.display = 'block';
+        instructionsList.innerHTML = '<li>Loading instructions...</li>';
+        
+        try {
+          const response = await fetch(`${API_URL}/instructions?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`);
+          const data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to load instructions');
+          }
+          
+          // Display instructions
+          if (data.data && data.data.length > 0) {
+            instructionsList.innerHTML = '';
+            data.data.forEach(instruction => {
+              const li = document.createElement('li');
+              li.className = 'instruction-item';
+              
+              const instructionText = document.createElement('span');
+              instructionText.textContent = `${instruction.title} (${instruction.status})`;
+              
+              const deleteBtn = document.createElement('button');
+              deleteBtn.className = 'delete';
+              deleteBtn.textContent = 'Delete';
+              deleteBtn.addEventListener('click', () => deleteInstruction(instruction.title));
+              
+              li.appendChild(instructionText);
+              li.appendChild(deleteBtn);
+              instructionsList.appendChild(li);
+            });
+          } else {
+            instructionsList.innerHTML = '<li>No instructions found</li>';
+          }
+          
+        } catch (error) {
+          instructionsList.innerHTML = `<li class="error">Error: ${error.message}</li>`;
+        } finally {
+          loadingInstructionsElement.style.display = 'none';
+        }
+      }
+      
+      // Delete instruction
+      async function deleteInstruction(title) {
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value.trim();
+        
+        // Username and password are optional - server will use defaults if not provided
+        
+        resultsElement.textContent = `Deleting instruction "${title}"...`;
+        resultsElement.classList.remove('error');
+        
+        try {
+          const response = await fetch(`${API_URL}/instructions/delete`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ 
+              username,
+              password,
+              title 
+            }),
+          });
+          
+          const data = await response.json();
+          
+          if (!response.ok) {
+            throw new Error(data.error || 'Failed to delete instruction');
+          }
+          
+          // Format and display the results
+          resultsElement.textContent = JSON.stringify(data, null, 2);
+          
+          // Reload instructions
+          loadInstructions();
+          
+        } catch (error) {
+          resultsElement.textContent = `Error: ${error.message}`;
+          resultsElement.classList.add('error');
+        }
+      }
+    });
+  </script>
+</body>
+</html>

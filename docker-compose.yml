@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  guidance-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: guidance-api
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - BROWSERBASE_API_KEY=${BROWSERBASE_API_KEY}
+      - BROWSERBASE_PROJECT_ID=${BROWSERBASE_PROJECT_ID}
+      - BROWSERBASE_URL=${BROWSERBASE_URL:-wss://cdp.browserbase.com}
+      - AUTH_USERNAME=${AUTH_USERNAME}
+      - AUTH_PASSWORD=${AUTH_PASSWORD}
+    restart: unless-stopped
+    volumes:
+      - ./logs:/app/logs
+    # Add healthcheck to ensure the application is running properly
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
