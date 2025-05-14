@@ -26,7 +26,7 @@ async function getInstructions(username, password) {
     }
     
     console.log('Instructions retrieved successfully!');
-    console.log('Instructions:', data.data);
+    console.log('Instructions:', data);
     
     return data;
   } catch (error) {
@@ -193,15 +193,9 @@ runExample().catch(console.error);
  * Create instruction:
  * curl -X POST http://localhost:3000/instructions \
  *   -H "Content-Type: application/json" \
- *   -d '{"username": "your_username", "password": "your_password", "title": "Be concise", "content": "Provide short, direct answers without unnecessary details"}'
- *
- * Delete instruction:
- * curl -X POST http://localhost:3000/instructions/delete \
- *   -H "Content-Type: application/json" \
- *   -d '{"username": "your_username", "password": "your_password", "title": "Be concise"}'
+ *   -d '{"title": "Be concise", "content": "Provide short, direct answers without unnecessary details"}'
  * 
  * Delete all instructions:
  * curl -X POST http://localhost:3000/instructions/delete \
  *   -H "Content-Type: application/json" \
- *   -d '{"username": "your_username", "password": "your_password"}'
  */

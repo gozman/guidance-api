@@ -304,9 +304,9 @@
           }
           
           // Display instructions
-          if (data.data && data.data.length > 0) {
+          if (data && data.length > 0) {
             instructionsList.innerHTML = '';
-            data.data.forEach(instruction => {
+            data.forEach(instruction => {
               const li = document.createElement('li');
               li.className = 'instruction-item';
               

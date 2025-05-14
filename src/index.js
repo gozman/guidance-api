@@ -75,7 +75,7 @@ app.get('/instructions', async (req, res) => {
     console.log('Retrieving instructions...');
     const instructions = await instructionsService.getInstructions(username, password);
     
-    return res.json({ success: true, data: instructions });
+    return res.json(instructions);
   } catch (error) {
     console.error('Error retrieving instructions:', error);
     return res.status(500).json({ 

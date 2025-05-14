@@ -122,8 +122,7 @@ setTimeout(async () => {
     const instructionsResponse = await makeGetRequest(`${API_URL}/instructions?username=test&password=test`);
     console.log(`Status Code: ${instructionsResponse.statusCode}`);
     assert.equal(instructionsResponse.statusCode, 200, 'Instructions endpoint should return 200 OK');
-    assert.equal(instructionsResponse.body.success, true, 'Response should indicate success');
-    assert.ok(Array.isArray(instructionsResponse.body.data), 'Response should contain an array of instructions');
+    assert.ok(Array.isArray(instructionsResponse.body), 'Response should contain an array of instructions');
     console.log('✅ Test 2 passed');
 
     // Test 3: POST /instructions endpoint
