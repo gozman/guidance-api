@@ -143,8 +143,10 @@ async function deleteAllInstructions(username, password) {
 // Example usage
 async function runExample() {
   // Use environment variables or fallback to defaults
-  const username = process.env.AUTH_USERNAME || 'mike.gozzo@ada.support';
-  const password = process.env.AUTH_PASSWORD || 'Cucuzza1983!';
+  // Replace the default values with your own credentials or set the AUTH_USERNAME
+  // and AUTH_PASSWORD environment variables when running the script.
+  const username = process.env.AUTH_USERNAME || 'user@example.com';
+  const password = process.env.AUTH_PASSWORD || 'password';
   
   console.log('Example 1: Getting all instructions');
   await getInstructions(username, password);
