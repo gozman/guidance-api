@@ -13,8 +13,9 @@ const context = browser.contexts()[0];
 const page = context.pages()[0];
 
 // Create some todos
-const username = 'mike.gozzo@ada.support'
-const password = 'Cucuzza1983!'
+// Replace these placeholder credentials with valid ones when running locally.
+const username = 'user@example.com'
+const password = 'password'
 
 // Visit TODO MVC
 await page.goto('https://gozblox.ada.support/customization/persona/custom-instructions');
